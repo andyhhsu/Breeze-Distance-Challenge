@@ -172,6 +172,83 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzLj_3EmuKCLsgzRK41xteUpTnt-wKLR9i2uMfuUf0P3eWD8VYID05kxz-8oDIUcK3D/exec'; 
         // --- 設定區結束 ---
 
+        // --- 新增: 音效引擎 ---
+        let audioContext;
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+        function playSound(type) {
+            if (!audioContext) return;
+            const now = audioContext.currentTime;
+            
+            if (type === 'bonusSuccess') {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+
+                oscillator.type = 'triangle';
+                gainNode.gain.setValueAtTime(0.2, now);
+
+                // 一段快速上升的音階，營造勝利感
+                const tones = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+                tones.forEach((tone, i) => {
+                    oscillator.frequency.setValueAtTime(tone, now + i * 0.08);
+                });
+
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+                oscillator.start(now);
+                oscillator.stop(now + 0.5);
+                return;
+            }
+
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            gainNode.gain.setValueAtTime(0.3, now);
+
+            switch (type) {
+                case 'click':
+                    oscillator.type = 'triangle';
+                    oscillator.frequency.setValueAtTime(800, now);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.1);
+                    break;
+                case 'success':
+                    oscillator.type = 'sine';
+                    const successTones = [659.25, 783.99, 987.77]; // E5, G5, B5
+                    successTones.forEach((tone, i) => {
+                        oscillator.frequency.setValueAtTime(tone, now + i * 0.1);
+                    });
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+                    break;
+                case 'failure':
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(220, now);
+                    oscillator.frequency.linearRampToValueAtTime(110, now + 0.15);
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+                    break;
+                case 'bonus':
+                     oscillator.type = 'sine';
+                    const bonusTones = [987.77, 1318.51]; // B5, E6
+                    bonusTones.forEach((tone, i) => {
+                        oscillator.frequency.setValueAtTime(tone, now + i * 0.08);
+                    });
+                    gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
+                    break;
+            }
+
+            oscillator.start(now);
+            oscillator.stop(now + 0.5);
+        }
+        // 為了符合瀏覽器政策，第一次使用者互動時才初始化音效
+        document.body.addEventListener('click', initAudio, { once: true });
+        document.body.addEventListener('touchstart', initAudio, { once: true });
+
+
         // 取得所有需要的 DOM 元素
         const body = document.body;
         const inputSection = document.getElementById('input-section');
@@ -250,8 +327,10 @@
         // 第一階段猜測
         guessForm.addEventListener('submit', (event) => {
             event.preventDefault();
+            playSound('click');
             const userAnswer = parseFloat(distanceInput.value);
             if (isNaN(userAnswer)) {
+                playSound('failure');
                 distanceInput.classList.add('border-red-500', 'animate-pulse');
                 setTimeout(() => { distanceInput.classList.remove('border-red-500', 'animate-pulse'); }, 2000);
                 return;
@@ -266,12 +345,14 @@
             const failureRewardText = `<div class="special-reward-text">獲得 Galaxy 轉轉樂乙次</div>`;
             
             if (Math.abs(userAnswer - DEMO_ANSWER) <= 0.5) {
+                playSound('success');
                 baseSpins = 2;
                 resultIcon.innerHTML = '&#127942;';
                 resultMessage.textContent = userAnswer === DEMO_ANSWER ? '恭喜！完全命中！' : '恭喜！非常接近！';
                 resultSubMessage.innerHTML = `門市體驗距離是 ${DEMO_ANSWER} 公尺！`;
                 rewardPlaceholder.innerHTML = successRewardText;
             } else {
+                playSound('failure');
                 baseSpins = 1;
                 resultIcon.innerHTML = '&#10060;';
                 resultMessage.textContent = '差一點點！';
@@ -282,6 +363,7 @@
 
         // 按下「挑戰加碼」
         bonusChallengeButton.addEventListener('click', () => {
+            playSound('bonus');
             resultSection.classList.add('hidden');
             bonusSection.classList.remove('hidden');
             bonusSection.classList.add('pop-in');
@@ -289,14 +371,17 @@
 
         // 按下「完成挑戰」(跳過加碼)
         finishButton.addEventListener('click', () => {
+            playSound('click');
             showFinalResult(false); // false 代表加碼挑戰失敗 (或跳過)
         });
 
         // 第二階段 (加碼) 猜測
         bonusGuessForm.addEventListener('submit', (event) => {
             event.preventDefault();
+            playSound('click');
             const userAnswer = parseFloat(bonusDistanceInput.value);
             if (isNaN(userAnswer)) {
+                playSound('failure');
                 bonusDistanceInput.classList.add('border-red-500', 'animate-pulse');
                 setTimeout(() => { bonusDistanceInput.classList.remove('border-red-500', 'animate-pulse'); }, 2000);
                 return;
@@ -318,6 +403,7 @@
             const finalRewardText = `<div class="special-reward-text">總共可參加Galaxy 轉轉樂 ${totalSpins} 次</div>`;
             
             if (isBonusSuccess) {
+                playSound('bonusSuccess');
                 body.classList.add('bg-success');
                 finalResultIcon.innerHTML = '&#127942;';
                 finalResultMessage.textContent = '挑戰成功！';
@@ -341,6 +427,7 @@
 
         // 完全重置
         resetAllButton.addEventListener('click', () => {
+            playSound('click');
             body.classList.remove('bg-success', 'bg-failure');
             finalResultSection.classList.add('hidden');
             inputSection.classList.remove('hidden');
