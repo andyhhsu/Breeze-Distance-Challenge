@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galaxy 挑戰星距離</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* --- 全局與背景優化 --- */
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            /* 恢復: 星空漸層背景 */
+            background-color: #0b1120;
+            background-image: 
+                radial-gradient(circle at 100% 0%, rgba(30, 87, 153, 0.3), transparent 40%),
+                radial-gradient(circle at 0% 100%, rgba(0, 212, 255, 0.2), transparent 50%);
+            transition: background 0.5s ease-in-out;
+        }
+
+        /* 恢復: 成功/失敗背景漸層 */
+        body.bg-success {
+            background-image: linear-gradient(135deg, #10B981, #059669);
+        }
+        body.bg-failure {
+            background-image: linear-gradient(135deg, #EF4444, #DC2626);
+        }
+
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* --- 特殊文字與動畫 --- */
+        .galaxy-text {
+            background-image: linear-gradient(45deg, #a7b3ff, #6c8cff, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 修改: 獎勵文字樣式 (移除發光效果，改為乾淨的亮藍色) */
+        .special-reward-text {
+            display: inline-block;
+            font-weight: 700; /* font-bold */
+            font-size: 1.25rem; /* text-xl */
+            line-height: 1.75rem;
+            color: #22d3ee; /* text-cyan-400 */
+            background-color: rgba(30, 87, 153, 0.2);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem; /* rounded-xl */
+        }
+        
+        .pop-in {
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        .loader {
+            border: 2px solid #f3f3f3; 
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white">
+
+    <div id="main-container" class="flex flex-col items-center min-h-screen p-4 pt-20">
+
+        <!-- 初始畫面 -->
+        <div id="input-section" class="w-full max-w-md text-center">
+            <h1 class="text-4xl md:text-5xl font-black tracking-wider pb-4 galaxy-text">Galaxy 挑戰星距離</h1>
+            <p class="mt-4 text-lg md:text-xl text-slate-300">請輸入您猜測的自拍距離 (公尺)</p>
+            
+            <form id="guess-form" class="mt-8">
+                <input 
+                    type="number" 
+                    id="distance-input"
+                    step="0.1"
+                    class="w-full text-center text-5xl md:text-6xl font-bold bg-slate-800/70 border-2 border-slate-600 rounded-lg p-4 focus:outline-none focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/50 transition duration-300 placeholder:text-gray-600"
+                    placeholder="例如: 6.2"
+                >
+                <button 
+                    type="submit"
+                    class="mt-8 w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-bold text-2xl py-4 px-8 rounded-lg shadow-lg shadow-blue-500/30 transform hover:scale-105 transition-all duration-300"
+                >
+                    送出答案
+                </button>
+            </form>
+        </div>
+
+        <!-- 結果畫面 (預設隱藏) -->
+        <div id="result-section" class="hidden text-center">
+             <div id="result-icon" class="text-8xl mb-4"></div>
+             <h2 id="result-message" class="text-5xl md:text-6xl font-black"></h2>
+             <p id="result-sub-message" class="mt-4 text-xl md:text-2xl leading-relaxed"></p>
+             <div id="reward-placeholder" class="mt-8"></div>
+             <!-- 新增: 挑戰選項按鈕 -->
+             <div id="result-actions" class="mt-10 flex flex-col sm:flex-row gap-4 w-full justify-center">
+                <button id="finish-button" class="w-full sm:w-auto bg-white/20 hover:bg-white/30 text-white font-bold text-lg py-3 px-6 rounded-lg transition-colors">完成挑戰</button>
+                <button id="bonus-challenge-button" class="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-white font-bold text-lg py-3 px-6 rounded-lg shadow-lg shadow-amber-500/30 transform hover:scale-105 transition-all duration-300">挑戰加碼 (+1次)</button>
+             </div>
+        </div>
+        
+        <!-- 新增: 加碼挑戰畫面 (預設隱藏) -->
+        <div id="bonus-section" class="hidden w-full max-w-md text-center">
+            <h1 class="text-3xl md:text-4xl font-black tracking-wider galaxy-text">【 加碼挑戰 】</h1>
+            <!-- 修正: 拿掉"理論" -->
+            <p class="mt-4 text-lg md:text-xl text-slate-300">猜猜看 Flip7 的<strong class="text-cyan-400">最遠</strong>自拍距離！</p>
+            <form id="bonus-guess-form" class="mt-8">
+                <input 
+                    type="number" 
+                    id="bonus-distance-input"
+                    step="0.1"
+                    class="w-full text-center text-5xl md:text-6xl font-bold bg-slate-800/70 border-2 border-slate-600 rounded-lg p-4 focus:outline-none focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/50 transition duration-300 placeholder:text-gray-600"
+                    placeholder=""
+                >
+                <button 
+                    type="submit"
+                    class="mt-8 w-full bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-white font-bold text-2xl py-4 px-8 rounded-lg shadow-lg shadow-amber-500/30 transform hover:scale-105 transition-all duration-300"
+                >
+                    <!-- 修正: 按鈕文字 -->
+                    送出答案
+                </button>
+            </form>
+        </div>
+
+        <!-- 新增: 最終結果畫面 (預設隱藏) -->
+        <div id="final-result-section" class="hidden text-center">
+            <div id="final-result-icon" class="text-8xl mb-4"></div>
+            <h2 id="final-result-message" class="text-5xl md:text-6xl font-black"></h2>
+            <p id="final-result-sub-message" class="mt-4 text-xl md:text-2xl leading-relaxed"></p>
+            <div id="final-reward-placeholder" class="mt-8"></div>
+            <button 
+               id="reset-all-button"
+               class="mt-10 bg-white/20 hover:bg-white/30 text-white font-bold text-lg py-3 px-6 rounded-lg transition-colors"
+           >
+               返回主畫面
+           </button>
+       </div>
+
+    </div>
+
+    <!-- 後台統計面板 (預設隱藏) -->
+    <div id="admin-panel" class="hidden absolute bottom-4 right-4 bg-slate-800/80 p-3 rounded-md text-sm text-slate-400 shadow-lg z-10">
+        <span><span id="counter-date" class="font-semibold text-white"></span> 體驗次數: 
+            <span id="counter-display" class="font-bold text-cyan-400 text-lg ml-1">...</span>
+        </span>
+    </div>
+
+    <script>
+        // --- 設定區 ---
+        const DEMO_ANSWER = 6; 
+        const MAX_DISTANCE_ANSWER = 8;
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzLj_3EmuKCLsgzRK41xteUpTnt-wKLR9i2uMfuUf0P3eWD8VYID05kxz-8oDIUcK3D/exec'; 
+        // --- 設定區結束 ---
+
+        // 取得所有需要的 DOM 元素
+        const body = document.body;
+        const inputSection = document.getElementById('input-section');
+        const guessForm = document.getElementById('guess-form');
+        const distanceInput = document.getElementById('distance-input');
+        
+        const resultSection = document.getElementById('result-section');
+        const resultIcon = document.getElementById('result-icon');
+        const resultMessage = document.getElementById('result-message');
+        const resultSubMessage = document.getElementById('result-sub-message');
+        const rewardPlaceholder = document.getElementById('reward-placeholder');
+        const finishButton = document.getElementById('finish-button');
+        const bonusChallengeButton = document.getElementById('bonus-challenge-button');
+
+        const bonusSection = document.getElementById('bonus-section');
+        const bonusGuessForm = document.getElementById('bonus-guess-form');
+        const bonusDistanceInput = document.getElementById('bonus-distance-input');
+
+        const finalResultSection = document.getElementById('final-result-section');
+        const finalResultIcon = document.getElementById('final-result-icon');
+        const finalResultMessage = document.getElementById('final-result-message');
+        const finalResultSubMessage = document.getElementById('final-result-sub-message');
+        const finalRewardPlaceholder = document.getElementById('final-reward-placeholder');
+        const resetAllButton = document.getElementById('reset-all-button');
+
+        const adminPanel = document.getElementById('admin-panel');
+        const titleHeader = document.querySelector('#input-section h1');
+        const counterDisplay = document.getElementById('counter-display');
+        const counterDateDisplay = document.getElementById('counter-date');
+        
+        let longPressTimer;
+        let baseSpins = 0; // 用於儲存第一階段的轉轉樂次數
+
+        // --- 後台面板邏輯 (無變動) ---
+        function toggleAdminPanel() {
+            if (adminPanel.classList.contains('hidden')) {
+                adminPanel.classList.remove('hidden');
+                fetchDailyCount(); 
+            } else {
+                adminPanel.classList.add('hidden');
+            }
+        }
+        async function fetchDailyCount() {
+            counterDisplay.innerHTML = '<span class="loader"></span>';
+            const displayDate = new Date().toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric', timeZone: 'Asia/Taipei' });
+            counterDateDisplay.textContent = `[${displayDate}]`;
+            if (!SCRIPT_URL || SCRIPT_URL.includes('在此貼上')) { counterDisplay.textContent = '錯誤'; return; }
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                counterDisplay.textContent = data.status === 'success' ? data.count : '錯誤';
+            } catch (error) {
+                console.error('抓取計數時發生錯誤:', error);
+                counterDisplay.textContent = '錯誤';
+            }
+        }
+        titleHeader.addEventListener('mousedown', () => { longPressTimer = setTimeout(toggleAdminPanel, 2000); });
+        titleHeader.addEventListener('touchstart', () => { longPressTimer = setTimeout(toggleAdminPanel, 2000); });
+        function cancelLongPress() { clearTimeout(longPressTimer); }
+        titleHeader.addEventListener('mouseup', cancelLongPress);
+        titleHeader.addEventListener('mouseleave', cancelLongPress);
+        titleHeader.addEventListener('touchend', cancelLongPress);
+        titleHeader.addEventListener('touchcancel', cancelLongPress);
+
+        // --- 核心邏輯 ---
+        function logParticipation(guessValue) {
+            if (!SCRIPT_URL || SCRIPT_URL.includes('在此貼上')) { console.warn("尚未設定 SCRIPT_URL。"); return; }
+            fetch(SCRIPT_URL, {
+                method: 'POST', body: JSON.stringify({ guess: guessValue }), headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            })
+            .then(response => response.json())
+            .then(data => { console.log(data.status === 'success' ? "成功記錄一次體驗。" : "記錄失敗，腳本回傳錯誤:" + data.message); })
+            .catch(error => { console.error('記錄時發生網路錯誤:', error); });
+        }
+
+        // 第一階段猜測
+        guessForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const userAnswer = parseFloat(distanceInput.value);
+            if (isNaN(userAnswer)) {
+                distanceInput.classList.add('border-red-500', 'animate-pulse');
+                setTimeout(() => { distanceInput.classList.remove('border-red-500', 'animate-pulse'); }, 2000);
+                return;
+            }
+            logParticipation(userAnswer); 
+            
+            inputSection.classList.add('hidden');
+            resultSection.classList.remove('hidden');
+            resultSection.classList.add('pop-in');
+
+            const successRewardText = `<div class="special-reward-text">獲得 Galaxy 轉轉樂兩次</div>`;
+            const failureRewardText = `<div class="special-reward-text">獲得 Galaxy 轉轉樂乙次</div>`;
+            
+            if (Math.abs(userAnswer - DEMO_ANSWER) <= 0.5) {
+                baseSpins = 2;
+                resultIcon.innerHTML = '&#127942;';
+                resultMessage.textContent = userAnswer === DEMO_ANSWER ? '恭喜！完全命中！' : '恭喜！非常接近！';
+                resultSubMessage.innerHTML = `門市體驗距離是 ${DEMO_ANSWER} 公尺！`;
+                rewardPlaceholder.innerHTML = successRewardText;
+            } else {
+                baseSpins = 1;
+                resultIcon.innerHTML = '&#10060;';
+                resultMessage.textContent = '差一點點！';
+                resultSubMessage.innerHTML = `您猜的是 ${userAnswer} 公尺！`;
+                rewardPlaceholder.innerHTML = failureRewardText;
+            }
+        });
+
+        // 按下「挑戰加碼」
+        bonusChallengeButton.addEventListener('click', () => {
+            resultSection.classList.add('hidden');
+            bonusSection.classList.remove('hidden');
+            bonusSection.classList.add('pop-in');
+        });
+
+        // 按下「完成挑戰」(跳過加碼)
+        finishButton.addEventListener('click', () => {
+            showFinalResult(false); // false 代表加碼挑戰失敗 (或跳過)
+        });
+
+        // 第二階段 (加碼) 猜測
+        bonusGuessForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const userAnswer = parseFloat(bonusDistanceInput.value);
+            if (isNaN(userAnswer)) {
+                bonusDistanceInput.classList.add('border-red-500', 'animate-pulse');
+                setTimeout(() => { bonusDistanceInput.classList.remove('border-red-500', 'animate-pulse'); }, 2000);
+                return;
+            }
+            logParticipation(`Bonus: ${userAnswer}`);
+            const isBonusSuccess = userAnswer === MAX_DISTANCE_ANSWER;
+            showFinalResult(isBonusSuccess);
+        });
+
+        // 顯示最終結果
+        function showFinalResult(isBonusSuccess) {
+            resultSection.classList.add('hidden');
+            bonusSection.classList.add('hidden');
+            finalResultSection.classList.remove('hidden');
+            finalResultSection.classList.add('pop-in');
+
+            const bonusSpins = isBonusSuccess ? 1 : 0;
+            const totalSpins = baseSpins + bonusSpins;
+            const finalRewardText = `<div class="special-reward-text">總共可參加Galaxy 轉轉樂 ${totalSpins} 次</div>`;
+            
+            if (isBonusSuccess) {
+                body.classList.add('bg-success');
+                finalResultIcon.innerHTML = '&#127942;';
+                finalResultMessage.textContent = '挑戰成功！';
+                finalResultSubMessage.innerHTML = `太厲害了！最遠距離就是 ${MAX_DISTANCE_ANSWER} 公尺！`;
+            } else {
+                // --- 這裡是本次修正的重點 ---
+                if (baseSpins > 1) { // 第一階段成功，加碼失敗
+                    body.classList.add('bg-success');
+                    finalResultIcon.innerHTML = '&#128526;'; // 戴墨鏡的酷臉
+                    finalResultMessage.textContent = '挑戰完成！';
+                    finalResultSubMessage.innerHTML = `第一階段猜對就很厲害囉！`;
+                } else { // 兩個階段都失敗
+                    body.classList.add('bg-failure');
+                    finalResultIcon.innerHTML = '&#128578;'; // 中性的微笑臉
+                    finalResultMessage.textContent = '挑戰完成！';
+                    finalResultSubMessage.innerHTML = `下次一定會更接近！`;
+                }
+            }
+            finalRewardPlaceholder.innerHTML = finalRewardText;
+        }
+
+        // 完全重置
+        resetAllButton.addEventListener('click', () => {
+            body.classList.remove('bg-success', 'bg-failure');
+            finalResultSection.classList.add('hidden');
+            inputSection.classList.remove('hidden');
+            distanceInput.value = '';
+            bonusDistanceInput.value = '';
+            baseSpins = 0;
+        });
+
+    </script>
+</body>
+</html>
+
