@@ -82,14 +82,20 @@
 </head>
 <body class="bg-slate-900 text-white">
 
-    <div id="main-container" class="flex flex-col items-center min-h-screen p-4 pt-20">
+    <div id="main-container" class="flex flex-col items-center justify-center min-h-screen p-4">
 
         <!-- 初始畫面 -->
         <div id="input-section" class="w-full max-w-md text-center">
-            <h1 class="text-4xl md:text-5xl font-black tracking-wider pb-4 galaxy-text">Galaxy 挑戰星距離</h1>
-            <p class="mt-4 text-lg md:text-xl text-slate-300">請輸入您猜測的自拍距離 (公尺)</p>
             
-            <form id="guess-form" class="mt-8">
+            <!-- 修改: 替換為您的產品圖並調整大小 -->
+            <img src="https://i.postimg.cc/0ND4jMcK/product-color-blue-Shadow-PC-removebg-preview-2.png" 
+                 alt="Galaxy Z Flip 產品圖"
+                 class="mx-auto mb-4 w-80 relative right-8">
+            
+            <h1 class="text-4xl md:text-5xl font-black tracking-wider pb-4 galaxy-text">Galaxy 挑戰星距離</h1>
+            <p class="mt-2 text-lg md:text-xl text-slate-300">請輸入您猜測的自拍距離 (公尺)</p>
+            
+            <form id="guess-form" class="mt-6">
                 <input 
                     type="number" 
                     id="distance-input"
@@ -99,7 +105,7 @@
                 >
                 <button 
                     type="submit"
-                    class="mt-8 w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-bold text-2xl py-4 px-8 rounded-lg shadow-lg shadow-blue-500/30 transform hover:scale-105 transition-all duration-300"
+                    class="mt-6 w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-bold text-2xl py-4 px-8 rounded-lg shadow-lg shadow-blue-500/30 transform hover:scale-105 transition-all duration-300"
                 >
                     送出答案
                 </button>
@@ -121,10 +127,14 @@
         
         <!-- 新增: 加碼挑戰畫面 (預設隱藏) -->
         <div id="bonus-section" class="hidden w-full max-w-md text-center">
+             <!-- 修改: 替換為您的產品圖並調整大小 -->
+             <img src="https://i.postimg.cc/0ND4jMcK/product-color-blue-Shadow-PC-removebg-preview-2.png" 
+                  alt="Galaxy Z Flip 產品圖"
+                  class="mx-auto mb-4 w-80 relative right-8">
+            
             <h1 class="text-3xl md:text-4xl font-black tracking-wider galaxy-text">【 加碼挑戰 】</h1>
-            <!-- 修正: 拿掉"理論" -->
-            <p class="mt-4 text-lg md:text-xl text-slate-300">猜猜看 Flip7 的<strong class="text-cyan-400">最遠</strong>自拍距離！</p>
-            <form id="bonus-guess-form" class="mt-8">
+            <p class="mt-2 text-lg md:text-xl text-slate-300">猜猜看Galaxy Flip7 的<strong class="text-cyan-400">最遠</strong>自拍距離！</p>
+            <form id="bonus-guess-form" class="mt-6">
                 <input 
                     type="number" 
                     id="bonus-distance-input"
@@ -134,9 +144,8 @@
                 >
                 <button 
                     type="submit"
-                    class="mt-8 w-full bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-white font-bold text-2xl py-4 px-8 rounded-lg shadow-lg shadow-amber-500/30 transform hover:scale-105 transition-all duration-300"
+                    class="mt-6 w-full bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-white font-bold text-2xl py-4 px-8 rounded-lg shadow-lg shadow-amber-500/30 transform hover:scale-105 transition-all duration-300"
                 >
-                    <!-- 修正: 按鈕文字 -->
                     送出答案
                 </button>
             </form>
