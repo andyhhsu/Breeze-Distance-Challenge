@@ -365,7 +365,8 @@
                 baseSpins = 1;
                 resultIcon.innerHTML = '&#10060;';
                 resultMessage.textContent = '差一點點！';
-                resultSubMessage.innerHTML = `您猜的是 ${userAnswer} 公尺！`;
+                // 修正: 猜錯時顯示正確答案
+                resultSubMessage.innerHTML = `您猜的是 ${userAnswer} 公尺！<br>正確答案是 ${DEMO_ANSWER} 公尺喔！`;
                 rewardPlaceholder.innerHTML = failureRewardText;
             }
         });
@@ -418,17 +419,18 @@
                 finalResultMessage.textContent = '挑戰成功！';
                 finalResultSubMessage.innerHTML = `太厲害了！最遠距離就是 ${MAX_DISTANCE_ANSWER} 公尺！`;
             } else {
-                // --- 這裡是本次修正的重點 ---
                 if (baseSpins > 1) { // 第一階段成功，加碼失敗
                     body.classList.add('bg-success');
-                    finalResultIcon.innerHTML = '&#128526;'; // 戴墨鏡的酷臉
+                    finalResultIcon.innerHTML = '&#128526;';
                     finalResultMessage.textContent = '挑戰完成！';
-                    finalResultSubMessage.innerHTML = `第一階段猜對就很厲害囉！`;
+                    // 修正: 加碼失敗時顯示正確答案
+                    finalResultSubMessage.innerHTML = `第一階段猜對就很厲害囉！<br>偷偷告訴你，最遠距離是 ${MAX_DISTANCE_ANSWER} 公尺！`;
                 } else { // 兩個階段都失敗
                     body.classList.add('bg-failure');
-                    finalResultIcon.innerHTML = '&#128578;'; // 中性的微笑臉
+                    finalResultIcon.innerHTML = '&#128578;';
                     finalResultMessage.textContent = '挑戰完成！';
-                    finalResultSubMessage.innerHTML = `下次一定會更接近！`;
+                    // 修正: 加碼失敗時顯示正確答案
+                    finalResultSubMessage.innerHTML = `下次一定會更接近！<br>偷偷告訴你，最遠距離是 ${MAX_DISTANCE_ANSWER} 公尺！`;
                 }
             }
             finalRewardPlaceholder.innerHTML = finalRewardText;
