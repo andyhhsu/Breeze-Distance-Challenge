@@ -101,7 +101,7 @@
                     id="distance-input"
                     step="0.1"
                     class="w-full text-center text-5xl md:text-6xl font-bold bg-slate-800/70 border-2 border-slate-600 rounded-lg p-4 focus:outline-none focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/50 transition duration-300 placeholder:text-gray-600"
-                    placeholder="例如: 2.5"
+                    placeholder="例如: 2"
                 >
                 <button 
                     type="submit"
@@ -435,19 +435,41 @@
             }
             finalRewardPlaceholder.innerHTML = finalRewardText;
         }
+        
+        // --- 新增: 閒置自動重置功能 ---
+        let inactivityTimer;
 
-        // 完全重置
-        resetAllButton.addEventListener('click', () => {
-            playSound('click');
+        function fullReset() {
             body.classList.remove('bg-success', 'bg-failure');
             finalResultSection.classList.add('hidden');
+            resultSection.classList.add('hidden');
+            bonusSection.classList.add('hidden');
             inputSection.classList.remove('hidden');
             distanceInput.value = '';
             bonusDistanceInput.value = '';
             baseSpins = 0;
+        }
+
+        function resetInactivityTimer() {
+            clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(fullReset, 30000); // 30秒 = 30000毫秒
+        }
+
+        // 綁定事件來重置計時器
+        window.onload = resetInactivityTimer;
+        document.addEventListener('mousemove', resetInactivityTimer);
+        document.addEventListener('mousedown', resetInactivityTimer);
+        document.addEventListener('touchstart', resetInactivityTimer);
+        document.addEventListener('keydown', resetInactivityTimer);
+
+        // 完全重置按鈕
+        resetAllButton.addEventListener('click', () => {
+            playSound('click');
+            fullReset();
         });
 
     </script>
 </body>
 </html>
+
 
