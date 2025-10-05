@@ -12,29 +12,17 @@
         /* --- 全局與背景優化 --- */
         body {
             font-family: 'Noto Sans TC', sans-serif;
-            /* 恢復: 星空漸層背景 */
             background-color: #0b1120;
             background-image: 
                 radial-gradient(circle at 100% 0%, rgba(30, 87, 153, 0.3), transparent 40%),
                 radial-gradient(circle at 0% 100%, rgba(0, 212, 255, 0.2), transparent 50%);
             transition: background 0.5s ease-in-out;
         }
-
-        /* 恢復: 成功/失敗背景漸層 */
         body.bg-success {
             background-image: linear-gradient(135deg, #10B981, #059669);
         }
         body.bg-failure {
             background-image: linear-gradient(135deg, #EF4444, #DC2626);
-        }
-
-        input[type=number]::-webkit-inner-spin-button,
-        input[type=number]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type=number] {
-            -moz-appearance: textfield;
         }
 
         /* --- 特殊文字與動畫 --- */
@@ -43,40 +31,57 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
-        /* 修改: 獎勵文字樣式 (移除發光效果，改為乾淨的亮藍色) */
         .special-reward-text {
             display: inline-block;
-            font-weight: 700; /* font-bold */
-            font-size: 1.25rem; /* text-xl */
+            font-weight: 700;
+            font-size: 1.25rem;
             line-height: 1.75rem;
-            color: #22d3ee; /* text-cyan-400 */
+            color: #22d3ee;
             background-color: rgba(30, 87, 153, 0.2);
             padding: 0.75rem 1.5rem;
-            border-radius: 0.75rem; /* rounded-xl */
+            border-radius: 0.75rem;
         }
-        
-        .pop-in {
-            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        }
-
+        .pop-in { animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
         .loader {
             border: 2px solid #f3f3f3; 
             border-top: 2px solid #3498db;
             border-radius: 50%;
-            width: 12px;
-            height: 12px;
+            width: 12px; height: 12px;
             animation: spin 1s linear infinite;
             display: inline-block;
         }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        @keyframes popIn {
-            0% { opacity: 0; transform: scale(0.8); }
-            100% { opacity: 1; transform: scale(1); }
+        /* --- 新增: 滑動拉桿樣式 --- */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            outline: none;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 28px;
+            height: 28px;
+            background: #22d3ee;
+            border-radius: 50%;
+            border: 4px solid #0b1120;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+        }
+        input[type=range]::-moz-range-thumb {
+            width: 28px;
+            height: 28px;
+            background: #22d3ee;
+            border-radius: 50%;
+            border: 4px solid #0b1120;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
         }
     </style>
 </head>
@@ -86,26 +91,27 @@
 
         <!-- 初始畫面 -->
         <div id="input-section" class="w-full max-w-md text-center">
-            
-            <!-- 修改: 替換為您的產品圖並調整大小 -->
             <img src="https://i.postimg.cc/0ND4jMcK/product-color-blue-Shadow-PC-removebg-preview-2.png" 
                  alt="Galaxy Z Flip 產品圖"
                  class="mx-auto mb-4 w-80 relative right-8">
-            
             <h1 class="text-4xl md:text-5xl font-black tracking-wider pb-4 galaxy-text">Galaxy 挑戰星距離</h1>
-            <p class="mt-2 text-lg md:text-xl text-slate-300">請輸入您猜測的自拍距離 (公尺)</p>
+            <p class="mt-2 text-lg md:text-xl text-slate-300">請滑動拉桿，猜測自拍距離</p>
             
             <form id="guess-form" class="mt-6">
+                <!-- 修改: 預設值改為 1.0 -->
+                <div id="distance-display" class="text-6xl font-bold text-white mb-4">1.0 公尺</div>
+                <!-- 修改: 預設 value 改為 1 -->
                 <input 
-                    type="number" 
-                    id="distance-input"
+                    type="range" 
+                    id="distance-slider"
+                    min="1"
+                    max="10"
                     step="0.1"
-                    class="w-full text-center text-5xl md:text-6xl font-bold bg-slate-800/70 border-2 border-slate-600 rounded-lg p-4 focus:outline-none focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/50 transition duration-300 placeholder:text-gray-600"
-                    placeholder="例如: 2"
+                    value="1"
                 >
                 <button 
                     type="submit"
-                    class="mt-6 w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-bold text-2xl py-4 px-8 rounded-lg shadow-lg shadow-blue-500/30 transform hover:scale-105 transition-all duration-300"
+                    class="mt-8 w-full bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-700 hover:to-cyan-600 text-white font-bold text-2xl py-4 px-8 rounded-lg shadow-lg shadow-blue-500/30 transform hover:scale-105 transition-all duration-300"
                 >
                     送出答案
                 </button>
@@ -118,40 +124,41 @@
              <h2 id="result-message" class="text-5xl md:text-6xl font-black"></h2>
              <p id="result-sub-message" class="mt-4 text-xl md:text-2xl leading-relaxed"></p>
              <div id="reward-placeholder" class="mt-8"></div>
-             <!-- 新增: 挑戰選項按鈕 -->
              <div id="result-actions" class="mt-10 flex flex-col sm:flex-row gap-4 w-full justify-center">
                 <button id="finish-button" class="w-full sm:w-auto bg-white/20 hover:bg-white/30 text-white font-bold text-lg py-3 px-6 rounded-lg transition-colors">完成挑戰</button>
                 <button id="bonus-challenge-button" class="w-full sm:w-auto bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-white font-bold text-lg py-3 px-6 rounded-lg shadow-lg shadow-amber-500/30 transform hover:scale-105 transition-all duration-300">挑戰加碼 (+1次)</button>
              </div>
         </div>
         
-        <!-- 新增: 加碼挑戰畫面 (預設隱藏) -->
+        <!-- 加碼挑戰畫面 (預設隱藏) -->
         <div id="bonus-section" class="hidden w-full max-w-md text-center">
-             <!-- 修改: 替換為您的產品圖並調整大小 -->
              <img src="https://i.postimg.cc/0ND4jMcK/product-color-blue-Shadow-PC-removebg-preview-2.png" 
                   alt="Galaxy Z Flip 產品圖"
                   class="mx-auto mb-4 w-80 relative right-8">
-            
             <h1 class="text-3xl md:text-4xl font-black tracking-wider galaxy-text">【 加碼挑戰 】</h1>
             <p class="mt-2 text-lg md:text-xl text-slate-300">猜猜看Galaxy Flip7 的<strong class="text-cyan-400">最遠</strong>自拍距離！</p>
             <form id="bonus-guess-form" class="mt-6">
+                <!-- 修改: 預設值改為 1.0 -->
+                <div id="bonus-distance-display" class="text-6xl font-bold text-white mb-4">1.0 公尺</div>
+                <!-- 修改: 預設 value 改為 1 -->
                 <input 
-                    type="number" 
-                    id="bonus-distance-input"
+                    type="range" 
+                    id="bonus-distance-slider"
+                    min="1"
+                    max="10"
                     step="0.1"
-                    class="w-full text-center text-5xl md:text-6xl font-bold bg-slate-800/70 border-2 border-slate-600 rounded-lg p-4 focus:outline-none focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/50 transition duration-300 placeholder:text-gray-600"
-                    placeholder=""
+                    value="1"
                 >
                 <button 
                     type="submit"
-                    class="mt-6 w-full bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-white font-bold text-2xl py-4 px-8 rounded-lg shadow-lg shadow-amber-500/30 transform hover:scale-105 transition-all duration-300"
+                    class="mt-8 w-full bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-white font-bold text-2xl py-4 px-8 rounded-lg shadow-lg shadow-amber-500/30 transform hover:scale-105 transition-all duration-300"
                 >
                     送出答案
                 </button>
             </form>
         </div>
 
-        <!-- 新增: 最終結果畫面 (預設隱藏) -->
+        <!-- 最終結果畫面 (預設隱藏) -->
         <div id="final-result-section" class="hidden text-center">
             <div id="final-result-icon" class="text-8xl mb-4"></div>
             <h2 id="final-result-message" class="text-5xl md:text-6xl font-black"></h2>
@@ -181,45 +188,35 @@
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzLj_3EmuKCLsgzRK41xteUpTnt-wKLR9i2uMfuUf0P3eWD8VYID05kxz-8oDIUcK3D/exec'; 
         // --- 設定區結束 ---
 
-        // --- 新增: 音效引擎 ---
+        // --- 音效引擎 ---
         let audioContext;
-        function initAudio() {
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-        }
+        function initAudio() { if (!audioContext) { audioContext = new (window.AudioContext || window.webkitAudioContext)(); } }
+        function playSound(type) { /* ... 音效程式碼 ... */ }
+        document.body.addEventListener('click', initAudio, { once: true });
+        document.body.addEventListener('touchstart', initAudio, { once: true });
+        // (音效程式碼為了簡潔省略，實際檔案中存在)
         function playSound(type) {
             if (!audioContext) return;
             const now = audioContext.currentTime;
-            
             if (type === 'bonusSuccess') {
                 const oscillator = audioContext.createOscillator();
                 const gainNode = audioContext.createGain();
                 oscillator.connect(gainNode);
                 gainNode.connect(audioContext.destination);
-
                 oscillator.type = 'triangle';
                 gainNode.gain.setValueAtTime(0.2, now);
-
-                // 一段快速上升的音階，營造勝利感
                 const tones = [523.25, 659.25, 783.99, 1046.50, 1318.51];
-                tones.forEach((tone, i) => {
-                    oscillator.frequency.setValueAtTime(tone, now + i * 0.08);
-                });
-
+                tones.forEach((tone, i) => { oscillator.frequency.setValueAtTime(tone, now + i * 0.08); });
                 gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
                 oscillator.start(now);
                 oscillator.stop(now + 0.5);
                 return;
             }
-
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
-
             gainNode.gain.setValueAtTime(0.3, now);
-
             switch (type) {
                 case 'click':
                     oscillator.type = 'triangle';
@@ -228,10 +225,8 @@
                     break;
                 case 'success':
                     oscillator.type = 'sine';
-                    const successTones = [659.25, 783.99, 987.77]; // E5, G5, B5
-                    successTones.forEach((tone, i) => {
-                        oscillator.frequency.setValueAtTime(tone, now + i * 0.1);
-                    });
+                    const successTones = [659.25, 783.99, 987.77];
+                    successTones.forEach((tone, i) => { oscillator.frequency.setValueAtTime(tone, now + i * 0.1); });
                     gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
                     break;
                 case 'failure':
@@ -242,27 +237,22 @@
                     break;
                 case 'bonus':
                      oscillator.type = 'sine';
-                    const bonusTones = [987.77, 1318.51]; // B5, E6
-                    bonusTones.forEach((tone, i) => {
-                        oscillator.frequency.setValueAtTime(tone, now + i * 0.08);
-                    });
+                    const bonusTones = [987.77, 1318.51];
+                    bonusTones.forEach((tone, i) => { oscillator.frequency.setValueAtTime(tone, now + i * 0.08); });
                     gainNode.gain.exponentialRampToValueAtTime(0.0001, now + 0.3);
                     break;
             }
-
             oscillator.start(now);
             oscillator.stop(now + 0.5);
         }
-        // 為了符合瀏覽器政策，第一次使用者互動時才初始化音效
-        document.body.addEventListener('click', initAudio, { once: true });
-        document.body.addEventListener('touchstart', initAudio, { once: true });
 
-
-        // 取得所有需要的 DOM 元素
+        // --- 取得所有 DOM 元素 ---
         const body = document.body;
         const inputSection = document.getElementById('input-section');
         const guessForm = document.getElementById('guess-form');
-        const distanceInput = document.getElementById('distance-input');
+        // 修改: 取得 slider 和 display
+        const distanceSlider = document.getElementById('distance-slider');
+        const distanceDisplay = document.getElementById('distance-display');
         
         const resultSection = document.getElementById('result-section');
         const resultIcon = document.getElementById('result-icon');
@@ -274,7 +264,9 @@
 
         const bonusSection = document.getElementById('bonus-section');
         const bonusGuessForm = document.getElementById('bonus-guess-form');
-        const bonusDistanceInput = document.getElementById('bonus-distance-input');
+        // 修改: 取得 bonus slider 和 display
+        const bonusDistanceSlider = document.getElementById('bonus-distance-slider');
+        const bonusDistanceDisplay = document.getElementById('bonus-distance-display');
 
         const finalResultSection = document.getElementById('final-result-section');
         const finalResultIcon = document.getElementById('final-result-icon');
@@ -289,9 +281,20 @@
         const counterDateDisplay = document.getElementById('counter-date');
         
         let longPressTimer;
-        let baseSpins = 0; // 用於儲存第一階段的轉轉樂次數
+        let baseSpins = 0;
+
+        // --- 新增: Slider 更新顯示的邏輯 ---
+        distanceSlider.addEventListener('input', () => {
+            distanceDisplay.textContent = `${parseFloat(distanceSlider.value).toFixed(1)} 公尺`;
+        });
+        bonusDistanceSlider.addEventListener('input', () => {
+            bonusDistanceDisplay.textContent = `${parseFloat(bonusDistanceSlider.value).toFixed(1)} 公尺`;
+        });
 
         // --- 後台面板邏輯 (無變動) ---
+        function toggleAdminPanel(){ /* ... */ }
+        async function fetchDailyCount(){ /* ... */ }
+        // (後台面板程式碼為了簡潔省略，實際檔案中存在)
         function toggleAdminPanel() {
             if (adminPanel.classList.contains('hidden')) {
                 adminPanel.classList.remove('hidden');
@@ -323,6 +326,8 @@
         titleHeader.addEventListener('touchcancel', cancelLongPress);
 
         // --- 核心邏輯 ---
+        function logParticipation(guessValue) { /* ... */ }
+        // (核心邏輯程式碼為了簡潔省略，實際檔案中存在)
         function logParticipation(guessValue) {
             if (!SCRIPT_URL || SCRIPT_URL.includes('在此貼上')) { console.warn("尚未設定 SCRIPT_URL。"); return; }
             fetch(SCRIPT_URL, {
@@ -333,26 +338,20 @@
             .catch(error => { console.error('記錄時發生網路錯誤:', error); });
         }
 
+
         // 第一階段猜測
         guessForm.addEventListener('submit', (event) => {
             event.preventDefault();
             playSound('click');
-            const userAnswer = parseFloat(distanceInput.value);
-            if (isNaN(userAnswer)) {
-                playSound('failure');
-                distanceInput.classList.add('border-red-500', 'animate-pulse');
-                setTimeout(() => { distanceInput.classList.remove('border-red-500', 'animate-pulse'); }, 2000);
-                return;
-            }
+            // 修改: 從 slider 讀取數值
+            const userAnswer = parseFloat(distanceSlider.value);
+            // (後續邏輯無變動)
             logParticipation(userAnswer); 
-            
             inputSection.classList.add('hidden');
             resultSection.classList.remove('hidden');
             resultSection.classList.add('pop-in');
-
             const successRewardText = `<div class="special-reward-text">獲得 Galaxy 轉轉樂兩次</div>`;
             const failureRewardText = `<div class="special-reward-text">獲得 Galaxy 轉轉樂乙次</div>`;
-            
             if (Math.abs(userAnswer - DEMO_ANSWER) <= 0.5) {
                 playSound('success');
                 baseSpins = 2;
@@ -365,7 +364,6 @@
                 baseSpins = 1;
                 resultIcon.innerHTML = '&#10060;';
                 resultMessage.textContent = '差一點點！';
-                // 修正: 猜錯時顯示正確答案
                 resultSubMessage.innerHTML = `您猜的是 ${userAnswer} 公尺！<br>正確答案是 ${DEMO_ANSWER} 公尺喔！`;
                 rewardPlaceholder.innerHTML = failureRewardText;
             }
@@ -382,20 +380,16 @@
         // 按下「完成挑戰」(跳過加碼)
         finishButton.addEventListener('click', () => {
             playSound('click');
-            showFinalResult(false); // false 代表加碼挑戰失敗 (或跳過)
+            showFinalResult(false);
         });
 
         // 第二階段 (加碼) 猜測
         bonusGuessForm.addEventListener('submit', (event) => {
             event.preventDefault();
             playSound('click');
-            const userAnswer = parseFloat(bonusDistanceInput.value);
-            if (isNaN(userAnswer)) {
-                playSound('failure');
-                bonusDistanceInput.classList.add('border-red-500', 'animate-pulse');
-                setTimeout(() => { bonusDistanceInput.classList.remove('border-red-500', 'animate-pulse'); }, 2000);
-                return;
-            }
+            // 修改: 從 slider 讀取數值
+            const userAnswer = parseFloat(bonusDistanceSlider.value);
+            // (後續邏輯無變動)
             logParticipation(`Bonus: ${userAnswer}`);
             const isBonusSuccess = userAnswer === MAX_DISTANCE_ANSWER;
             showFinalResult(isBonusSuccess);
@@ -403,6 +397,7 @@
 
         // 顯示最終結果
         function showFinalResult(isBonusSuccess) {
+             // (邏輯無變動)
             resultSection.classList.add('hidden');
             bonusSection.classList.add('hidden');
             finalResultSection.classList.remove('hidden');
@@ -419,50 +414,48 @@
                 finalResultMessage.textContent = '挑戰成功！';
                 finalResultSubMessage.innerHTML = `太厲害了！最遠距離就是 ${MAX_DISTANCE_ANSWER} 公尺！`;
             } else {
-                if (baseSpins > 1) { // 第一階段成功，加碼失敗
+                if (baseSpins > 1) {
                     body.classList.add('bg-success');
                     finalResultIcon.innerHTML = '&#128526;';
                     finalResultMessage.textContent = '挑戰完成！';
-                    // 修正: 加碼失敗時顯示正確答案
                     finalResultSubMessage.innerHTML = `第一階段猜對就很厲害囉！<br>偷偷告訴你，最遠距離是 ${MAX_DISTANCE_ANSWER} 公尺！`;
-                } else { // 兩個階段都失敗
+                } else {
                     body.classList.add('bg-failure');
                     finalResultIcon.innerHTML = '&#128578;';
                     finalResultMessage.textContent = '挑戰完成！';
-                    // 修正: 加碼失敗時顯示正確答案
                     finalResultSubMessage.innerHTML = `下次一定會更接近！<br>偷偷告訴你，最遠距離是 ${MAX_DISTANCE_ANSWER} 公尺！`;
                 }
             }
             finalRewardPlaceholder.innerHTML = finalRewardText;
         }
         
-        // --- 新增: 閒置自動重置功能 ---
+        // --- 閒置自動重置功能 ---
         let inactivityTimer;
-
         function fullReset() {
             body.classList.remove('bg-success', 'bg-failure');
             finalResultSection.classList.add('hidden');
             resultSection.classList.add('hidden');
             bonusSection.classList.add('hidden');
             inputSection.classList.remove('hidden');
-            distanceInput.value = '';
-            bonusDistanceInput.value = '';
+            // 修改: 重設 slider 和 display 為 1
+            distanceSlider.value = 1;
+            distanceDisplay.textContent = `${(1).toFixed(1)} 公尺`;
+            bonusDistanceSlider.value = 1;
+            bonusDistanceDisplay.textContent = `${(1).toFixed(1)} 公尺`;
             baseSpins = 0;
         }
 
         function resetInactivityTimer() {
             clearTimeout(inactivityTimer);
-            inactivityTimer = setTimeout(fullReset, 30000); // 30秒 = 30000毫秒
+            inactivityTimer = setTimeout(fullReset, 30000);
         }
 
-        // 綁定事件來重置計時器
         window.onload = resetInactivityTimer;
         document.addEventListener('mousemove', resetInactivityTimer);
         document.addEventListener('mousedown', resetInactivityTimer);
         document.addEventListener('touchstart', resetInactivityTimer);
         document.addEventListener('keydown', resetInactivityTimer);
 
-        // 完全重置按鈕
         resetAllButton.addEventListener('click', () => {
             playSound('click');
             fullReset();
@@ -471,5 +464,4 @@
     </script>
 </body>
 </html>
-
 
